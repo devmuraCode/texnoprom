@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Navbar from "@/components/Navbar/Navbar";
+import { Footer } from "@/components/Footer/Footer";
+import { TanstackProvider } from "@/providers/tansteck-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,15 +22,19 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="en">
+    <html lang="en" className="h-full">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col h-full`}
       >
-        {children}
+        <TanstackProvider>
+          <Navbar />
+          <main className="flex-1 py-20 overflow-auto">{children}</main>
+          <Footer />
+        </TanstackProvider>
       </body>
     </html>
   );
