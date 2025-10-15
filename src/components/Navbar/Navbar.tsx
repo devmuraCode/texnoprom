@@ -3,10 +3,14 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
-import { Search, ShoppingCart, User, LogIn } from "lucide-react";
-import logo from '@/assets/logo.png'
+import logo from "@/assets/logo.png";
 import { useQuery } from "@tanstack/react-query";
-import { getBanners } from "@/app/server/banners";
+import { Swiper, SwiperSlide } from "swiper/react";
+import type { Category } from "@/shared/types/category";
+import { getCategories } from "@/app/server/categories";
+import { Search, ShoppingCart, User, LogIn } from "lucide-react";
+import { Navigation, Autoplay } from "swiper/modules";
+
 const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -16,8 +20,12 @@ const Navbar = () => {
     console.log("Search query:", searchQuery);
   };
 
-  const query = useQuery({ queryKey : ["banners"], queryFn: getBanners});
-console.log(query);
+  const query = useQuery<Category[]>({
+    queryKey: ["categories"],
+    queryFn: getCategories,
+  });
+
+  console.log("Categories:", query.data);
 
   return (
     <nav className="bg-white shadow-md fixed w-full top-0 z-50">
@@ -48,7 +56,7 @@ console.log(query);
               />
               <button type="submit" className="hidden">
                 Search
-              </button>{" "}
+              </button>
             </div>
           </form>
 
@@ -77,16 +85,32 @@ console.log(query);
           </div>
         </div>
 
-        <div className="hidden md:flex justify-center space-x-8 py-2 border-t border-gray-100">
-          {query.data?.map((banner: any) => (
-            <Link
-              key={banner.id}
-              href={banner.link}
-              className="text-gray-600 hover:text-red-600"
-            >
-              {banner.title}
-            </Link>
-          ))}
+        <div className="hidden md:flex justify-center border-t border-gray-100 m-0">
+          <Swiper
+            modules={[Navigation, Autoplay]}
+            spaceBetween={20}
+            slidesPerView={6}
+            navigation
+            className="w-full max-w-7xl m-0"
+            autoplay={{
+              delay: 1500,
+              disableOnInteraction: false,
+            }}
+          >
+            {query.data?.map((cat) => (
+              <SwiperSlide
+                key={cat.id}
+                className="flex justify-center items-center"
+              >
+                <Link
+                  href={`/category/${cat.slug}`}
+                  className="text-gray-600 hover:text-red-600 text-sm font-medium py-2 px-4 transition-colors duration-200"
+                >
+                  {cat.title}
+                </Link>
+              </SwiperSlide>
+            ))}
+          </Swiper>
         </div>
 
         <div className="md:hidden py-2">
