@@ -28,7 +28,7 @@ const Navbar = () => {
   console.log("Categories:", query.data);
 
   return (
-    <nav className="bg-white shadow-md fixed w-full top-0 z-50">
+    <nav className="bg-white shadow-md w-full top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
           <div className="flex items-center space-x-2">
@@ -90,7 +90,7 @@ const Navbar = () => {
             modules={[Navigation, Autoplay]}
             spaceBetween={20}
             slidesPerView={6}
-            navigation
+            
             className="w-full max-w-7xl m-0"
             autoplay={{
               delay: 1500,
