@@ -33,7 +33,7 @@ export default function RootLayout({
       >
         <TanstackProvider>
           <Navbar />
-          <main className="flex-1 py-20 overflow-auto">{children}</main>
+          <main className="flex-1 py-20">{children}</main>
           <Footer />
         </TanstackProvider>
       </body>
