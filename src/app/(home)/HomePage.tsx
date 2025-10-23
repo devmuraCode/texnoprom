@@ -1,16 +1,18 @@
 import type { ITweet } from "@/shared/types/tweet.interface";
 import HeaderSlider from "./Sections/HeaderSlider";
 import BestSallers from "./Sections/BestSallers";
+import { PapularCategories } from "./Sections/PapularCategories";
 
 interface Props {
-    tweet: ITweet;
+  tweet: ITweet;
 }
 
-export function HomePage({}: Props){
-    return (
-        <div>
-            <HeaderSlider/>
-            <BestSallers/>
-        </div>
-    );
+export function HomePage({}: Props) {
+  return (
+    <div>
+      <HeaderSlider />
+      <BestSallers />
+      <PapularCategories />
+    </div>
+  );
 }

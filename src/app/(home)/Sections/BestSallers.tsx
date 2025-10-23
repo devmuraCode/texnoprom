@@ -30,7 +30,7 @@ export const BestSallers = () => {
   const productItems = hitProductResponse?.products || [];
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto py-16">
       <h2 className="text-2xl font-bold mb-6 text-gray-800">
         Лучшие предложения
       </h2>
