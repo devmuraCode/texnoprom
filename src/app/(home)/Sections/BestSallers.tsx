@@ -1,28 +1,24 @@
-"use client"
-
 import { getHitProduct } from "@/app/server/hitproduct";
+import { ErrorMessage } from "@/components/ErrorMessage";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 import ProductCard from "@/components/ProductCard/ProductCard";
 import type { IHitProductResponse, IProduct } from "@/shared/types/product";
-import { useQuery } from "@tanstack/react-query";
 
-export const BestSallers = () => {
-  const {
-    data: hitProductResponse,
-    isLoading,
-    error,
-  } = useQuery<IHitProductResponse>({
-    queryKey: ["hitProducts"],
-    queryFn: getHitProduct,
-  });
+export const BestSallers = async () => {
+  let hitProductResponse: IHitProductResponse | null = null;
+  let error: Error | null = null;
 
-  if (isLoading) {
-    return <div className="text-center py-10 text-gray-600">Loading...</div>;
+  try {
+    hitProductResponse = await getHitProduct();
+  } catch (err) {
+    error =
+      err instanceof Error ? err : new Error("Failed to fetch hit products");
   }
 
   if (error) {
     return (
       <div className="text-center py-10 text-red-600">
-        Error loading best sellers
+        <ErrorMessage message={error.message} />
       </div>
     );
   }
