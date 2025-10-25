@@ -1,4 +1,4 @@
-import { getBrands } from "@/app/server/brands";
+import { getBrands } from "@/server/brands";
 import Slider from "@/components/ClientSlider/Slider";
 import type { IBrand } from "@/shared/types/brands";
 

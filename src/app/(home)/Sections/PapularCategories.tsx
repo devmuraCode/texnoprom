@@ -1,7 +1,6 @@
-import { getPapularCategory } from "@/app/server/papularcategory";
+import { getPapularCategory } from "@/server/papularcategory";
 import Slider from "@/components/ClientSlider/Slider";
 import type { IPapularCategory } from "@/shared/types/papularcategorytype";
-
 
 export const PapularCategories = async () => {
   let papularCategories: IPapularCategory[] = [];

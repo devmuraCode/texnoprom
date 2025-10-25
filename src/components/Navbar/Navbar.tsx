@@ -7,7 +7,7 @@ import logo from "@/assets/logo.png";
 import { useQuery } from "@tanstack/react-query";
 import { Swiper, SwiperSlide } from "swiper/react";
 import type { Category } from "@/shared/types/category";
-import { getCategories } from "@/app/server/categories";
+import { getCategories } from "@/server/categories";
 import { Search, ShoppingCart, User, LogIn } from "lucide-react";
 import { Navigation, Autoplay } from "swiper/modules";
 
@@ -90,7 +90,6 @@ const Navbar = () => {
             modules={[Navigation, Autoplay]}
             spaceBetween={20}
             slidesPerView={6}
-            
             className="w-full max-w-7xl m-0"
             autoplay={{
               delay: 1500,

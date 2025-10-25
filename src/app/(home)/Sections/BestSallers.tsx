@@ -1,4 +1,4 @@
-import { getHitProduct } from "@/app/server/hitproduct";
+import { getHitProduct } from "@/server/hitproduct";
 import { ErrorMessage } from "@/components/ErrorMessage";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import ProductCard from "@/components/ProductCard/ProductCard";

@@ -1,9 +1,8 @@
-import { getBanners } from "@/app/server/banners";
-import { getDayProduct } from "@/app/server/dayproduct";
+import { getBanners } from "@/server/banners";
+import { getDayProduct } from "@/server/dayproduct";
 import ClientSlider from "@/components/ClientSlider/ClientSlider";
 import type { IBanner } from "@/shared/types/banners";
 import type { IDayProduct } from "@/shared/types/dayproduct";
-
 
 export const HeaderSlider = async () => {
   let banners: IBanner[] = [];
