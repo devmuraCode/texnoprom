@@ -1,6 +1,4 @@
 import { notFound } from "next/navigation";
-import ProductCard from "@/components/ProductCard/ProductCard";
-
 import type {
   IProduct,
   ICharacteristic,
@@ -8,7 +6,15 @@ import type {
 } from "@/shared/types/product";
 import { Suspense } from "react";
 import Image from "next/image";
-import { getCharacteristics, getPhotos, getProduct } from "@/server/getProductDetailBySlug";
+import type { IInstallment } from "@/shared/types/instalment";
+import {
+  getCharacteristics,
+  getPhotos,
+  getProduct,
+} from "@/server/getProductDetailBySlug";
+import { getInstallment } from "@/server/getInstalment";
+import Link from "next/link";
+import ProductCardClient from "@/components/ProductCard/ProductCardClient";
 
 export default async function ProductDetail({
   params,
@@ -18,14 +24,17 @@ export default async function ProductDetail({
   let product: IProduct | null = null;
   let characteristics: ICharacteristic[] = [];
   let photos: IProductPhotos[] = [];
+  let installments: IInstallment[] = [];
   let error: Error | null = null;
 
   try {
+    const { slug } = await params;
     [product, characteristics, photos] = await Promise.all([
-      getProduct(params.slug),
-      getCharacteristics(params.slug),
-      getPhotos(params.slug),
+      getProduct(slug),
+      getCharacteristics(slug),
+      getPhotos(slug),
     ]);
+    installments = await getInstallment(product.id, 12);
   } catch (err) {
     error = err instanceof Error ? err : new Error("Unknown error");
   }
@@ -34,9 +43,8 @@ export default async function ProductDetail({
     notFound();
   }
 
-  const isMicrowave =
-    product.title.toLowerCase().includes("shivaki") ||
-    product.title.toLowerCase().includes("microwave");
+  const selectedInstallment = installments.length > 0 ? installments[0] : null;
+  const currentDateTime = "06:43 PM +05, Monday, October 27, 2025";
 
   return (
     <Suspense fallback={<div className="text-center py-10">Загрузка...</div>}>
@@ -44,7 +52,6 @@ export default async function ProductDetail({
         <h1 className="text-3xl font-bold text-gray-800 mb-8">
           {product.title}
         </h1>
-
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
           <div className="lg:col-span-3 relative w-full h-96">
             <Image
@@ -55,7 +62,6 @@ export default async function ProductDetail({
               sizes="(max-width: 1024px) 100vw, 75vw"
             />
           </div>
-          {/* фото */}
           <div className="lg:col-span-1 grid grid-cols-1 gap-4">
             {photos.map((photo) => (
               <div key={photo.id} className="relative w-full h-24">
@@ -70,12 +76,10 @@ export default async function ProductDetail({
             ))}
           </div>
         </div>
-
         <div className="mb-8">
-          <ProductCard
+          <ProductCardClient
             id={product.id}
             title={product.title}
-            mainimg={product.mainimg}
             price={product.price}
             discounted_price={product.discounted_price}
             installment={product.installment}
@@ -83,10 +87,11 @@ export default async function ProductDetail({
             discount_percent={product.discount_percent}
             stock_quantity={product.stock_quantity}
             updated_at={product.updated_at}
+            selectedInstallment={selectedInstallment}
+            currentDateTime={currentDateTime}
           />
         </div>
 
-        {/* Характеристика */}
         <div className="bg-white p-6 rounded-lg shadow-md mb-8">
           <h2 className="text-2xl font-semibold text-gray-800 mb-6 border-b border-gray-200 pb-2">
             Характеристики
@@ -102,8 +107,6 @@ export default async function ProductDetail({
             ))}
           </ul>
         </div>
-
-        {/* Описание */}
         {product.description && (
           <div className="bg-white p-6 rounded-lg shadow-md mb-8">
             <h2 className="text-2xl font-semibold text-gray-800 mb-4">
@@ -114,42 +117,7 @@ export default async function ProductDetail({
             </p>
           </div>
         )}
-
-        {/* Специфичные элементы для микроволновки (пример) */}
-        {isMicrowave && (
-          <div className="bg-white p-6 rounded-lg shadow-md mb-8">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-              Дополнительно
-            </h2>
-            <p className="text-gray-600">
-              Рассрочка доступна на 12 месяцев через сервисы Payme, Open, Uzum и
-              Iman.
-            </p>
-          </div>
-        )}
       </div>
     </Suspense>
   );
-}
-
-export async function generateMetadata({
-  params,
-}: {
-  params: { slug: string };
-}) {
-  try {
-    const product = await getProduct(params.slug);
-    return {
-      title: product.title,
-      description: product.description?.slice(0, 160) || "Описание продукта",
-      openGraph: {
-        images: [product.mainimg],
-      },
-    };
-  } catch {
-    return {
-      title: "Продукт не найден",
-      description: "Страница продукта недоступна",
-    };
-  }
 }
