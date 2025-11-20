@@ -5,6 +5,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import Navbar from "@/components/Navbar/Navbar";
 import { Footer } from "@/components/Footer/Footer";
 import { TanstackProvider } from "@/providers/tansteck-provider";
+import CatalogModal from "@/components/CatalogModal/CatalogModal";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,6 +36,7 @@ export default function RootLayout({
           <Navbar />
           <main className="flex-1 py-20">{children}</main>
           <Footer />
+          <CatalogModal/>
         </TanstackProvider>
       </body>
     </html>

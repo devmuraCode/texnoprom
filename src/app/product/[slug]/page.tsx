@@ -6,15 +6,12 @@ import type {
 } from "@/shared/types/product";
 import { Suspense } from "react";
 import Image from "next/image";
-import type { IInstallment } from "@/shared/types/instalment";
+import ProductCardClient from "@/components/ProductCard/ProductCardClient";
 import {
   getCharacteristics,
   getPhotos,
   getProduct,
 } from "@/server/getProductDetailBySlug";
-import { getInstallment } from "@/server/getInstalment";
-import Link from "next/link";
-import ProductCardClient from "@/components/ProductCard/ProductCardClient";
 
 export default async function ProductDetail({
   params,
@@ -24,7 +21,6 @@ export default async function ProductDetail({
   let product: IProduct | null = null;
   let characteristics: ICharacteristic[] = [];
   let photos: IProductPhotos[] = [];
-  let installments: IInstallment[] = [];
   let error: Error | null = null;
 
   try {
@@ -34,7 +30,6 @@ export default async function ProductDetail({
       getCharacteristics(slug),
       getPhotos(slug),
     ]);
-    installments = await getInstallment(product.id, 12);
   } catch (err) {
     error = err instanceof Error ? err : new Error("Unknown error");
   }
@@ -43,55 +38,81 @@ export default async function ProductDetail({
     notFound();
   }
 
-  const selectedInstallment = installments.length > 0 ? installments[0] : null;
-  const currentDateTime = "06:43 PM +05, Monday, October 27, 2025";
+  const currentDateTime = new Date().toLocaleString("ru-RU", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    timeZoneName: "short",
+  });
 
   return (
     <Suspense fallback={<div className="text-center py-10">Загрузка...</div>}>
-      <div className="container mx-auto py-16 px-4 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-8">
+      <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-6">
           {product.title}
         </h1>
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
-          <div className="lg:col-span-3 relative w-full h-96">
-            <Image
-              src={product.mainimg}
-              alt={product.title}
-              fill
-              className="object-contain"
-              sizes="(max-width: 1024px) 100vw, 75vw"
-            />
-          </div>
-          <div className="lg:col-span-1 grid grid-cols-1 gap-4">
-            {photos.map((photo) => (
-              <div key={photo.id} className="relative w-full h-24">
+
+        {/* === Главный flex-контейнер: галерея + карточка === */}
+        <div className="flex justify-between flex-col lg:flex-row gap-6 lg:gap-8 mb-10">
+          {/* === Галерея (левая часть) === */}
+          <div className="w-full">
+            <div className="grid grid-cols-1 gap-4">
+              {/* Главное фото */}
+              <div className="relative w-full h-64 sm:h-80 lg:h-96 bg-white rounded-lg shadow-sm overflow-hidden">
                 <Image
-                  src={photo.img}
-                  alt={`${product.title} - дополнительное фото`}
+                  src={product.mainimg}
+                  alt={product.title}
                   fill
-                  className="object-contain"
-                  sizes="(max-width: 1024px) 100vw, 25vw"
+                  className="object-contain p-4"
+                  sizes="(max-width: 1024px) 100vw, 60vw"
+                  priority
                 />
               </div>
-            ))}
+
+              {/* Миниатюры */}
+              {photos.length > 0 && (
+                <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
+                  {photos.map((photo) => (
+                    <div
+                      key={photo.id}
+                      className="relative w-full h-20 bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer hover:ring-2 hover:ring-red-500 transition-all"
+                    >
+                      <Image
+                        src={photo.img}
+                        alt="Доп. фото"
+                        fill
+                        className="object-contain p-2"
+                        sizes="15vw"
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* === Карточка с рассрочкой (правая часть) === */}
+          <div className="w-full">
+            <ProductCardClient
+              id={product.id}
+              title={product.title}
+              mainimg={product.mainimg}
+              price={product.price}
+              discounted_price={product.discounted_price}
+              installment={product.installment}
+              slug={product.slug}
+              discount_percent={product.discount_percent}
+              stock_quantity={product.stock_quantity}
+              updated_at={product.updated_at}
+              currentDateTime={currentDateTime}
+            />
           </div>
         </div>
-        <div className="mb-8">
-          <ProductCardClient
-            id={product.id}
-            title={product.title}
-            price={product.price}
-            discounted_price={product.discounted_price}
-            installment={product.installment}
-            slug={product.slug}
-            discount_percent={product.discount_percent}
-            stock_quantity={product.stock_quantity}
-            updated_at={product.updated_at}
-            selectedInstallment={selectedInstallment}
-            currentDateTime={currentDateTime}
-          />
-        </div>
 
+        {/* === Характеристики === */}
         <div className="bg-white p-6 rounded-lg shadow-md mb-8">
           <h2 className="text-2xl font-semibold text-gray-800 mb-6 border-b border-gray-200 pb-2">
             Характеристики
@@ -107,6 +128,8 @@ export default async function ProductDetail({
             ))}
           </ul>
         </div>
+
+        {/* === Описание === */}
         {product.description && (
           <div className="bg-white p-6 rounded-lg shadow-md mb-8">
             <h2 className="text-2xl font-semibold text-gray-800 mb-4">

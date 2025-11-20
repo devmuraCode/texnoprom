@@ -10,11 +10,12 @@ import type { Category } from "@/shared/types/category";
 import { getCategories } from "@/server/categories";
 import { Search, ShoppingCart, User, LogIn } from "lucide-react";
 import { Navigation, Autoplay } from "swiper/modules";
+import { useCatalogStore } from "@/store/catalogStore";
 
 const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-
+const { openCatalog } = useCatalogStore();
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Search query:", searchQuery);
@@ -33,7 +34,10 @@ const Navbar = () => {
         <div className="flex justify-between items-center py-4">
           <div className="flex items-center space-x-2">
             <Image src={logo} alt="Texnoprom" className="h-20 w-auto" />
-            <button className="bg-red-600 text-white px-4 py-2 rounded-md text-sm font-semibold hover:bg-red-700">
+            <button
+              onClick={openCatalog}
+              className="bg-red-600 text-white px-4 py-2 rounded-md text-sm font-semibold hover:bg-red-700"
+            >
               Каталог
             </button>
           </div>
