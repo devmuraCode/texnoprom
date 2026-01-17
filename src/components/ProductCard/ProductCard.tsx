@@ -3,6 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useCartStore } from "@/store/cartStore";
 
 interface ProductCardProps {
   id: string;
@@ -29,6 +30,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
   stock_quantity,
   updated_at,
 }) => {
+  const addToCart = useCartStore((s) => s.addToCart);
+
   const lastUpdated = updated_at
     ? new Date(updated_at).toLocaleDateString("ru-RU", {
         day: "2-digit",
@@ -36,6 +39,27 @@ const ProductCard: React.FC<ProductCardProps> = ({
         year: "numeric",
       })
     : null;
+
+
+
+  const numericPrice =
+    discounted_price && discounted_price < Number(price)
+      ? discounted_price
+      : Number(price);
+
+  const handleAddToCart = () => {
+    // if (isOutOfStock) return;
+
+    addToCart(
+      {
+        id,
+        title,
+        price: numericPrice,
+        image: mainimg,
+      },
+      1
+    );
+  };
 
   return (
     <div className="border border-gray-200 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 bg-white relative">
@@ -51,7 +75,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           alt={title}
           fill
           className="object-contain"
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" 
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
         />
       </div>
 
@@ -59,8 +83,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
         <h3 className="text-lg font-semibold text-gray-800 line-clamp-2">
           {title}
         </h3>
+
         <div className="mt-2">
-          {discounted_price && discounted_price < parseFloat(price) && (
+          {discounted_price && discounted_price < parseFloat(price) ? (
             <div className="flex items-center gap-2">
               <span className="text-red-600 text-xl font-bold">
                 {discounted_price.toLocaleString()} сум
@@ -69,33 +94,44 @@ const ProductCard: React.FC<ProductCardProps> = ({
                 {parseFloat(price).toLocaleString()} сум
               </span>
             </div>
-          )}
-          {!discounted_price && (
+          ) : (
             <span className="text-gray-800 text-xl font-bold">
               {parseFloat(price).toLocaleString()} сум
             </span>
           )}
         </div>
+
         {installment && (
           <p className="text-sm text-gray-600 mt-1">
             Рассрочка: {installment.toLocaleString()} сум/мес
           </p>
         )}
-        {stock_quantity !== undefined && stock_quantity <= 0 && (
+
+        {/* {isOutOfStock && (
           <p className="text-sm text-red-600 mt-1">Нет в наличии</p>
-        )}
+        )} */}
+
         {lastUpdated && (
           <p className="text-xs text-gray-500 mt-1">Обновлено: {lastUpdated}</p>
         )}
       </div>
-      <div className="p-4 pt-0">
+
+      <div className="p-4 pt-0 flex gap-2 items-center">
         <Link
           href={`/product/${slug}`}
           className="w-full inline-block bg-red-600 text-white text-center py-2 rounded hover:bg-red-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
-          aria-disabled={stock_quantity !== undefined && stock_quantity <= 0}
+          // aria-disabled={isOutOfStock}
         >
           Купить
         </Link>
+
+        <button
+          onClick={handleAddToCart}
+          // disabled={isOutOfStock}
+          className="w-full inline-block bg-gray-200 text-gray-600 text-center py-2 rounded hover:bg-gray-300 transition-colors disabled:bg-gray-300 disabled:text-gray-400 disabled:cursor-not-allowed"
+        >
+          Добавить в корзину
+        </button>
       </div>
     </div>
   );

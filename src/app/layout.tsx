@@ -2,11 +2,14 @@ import type { Metadata } from "next";
 import "swiper/css";
 import "./globals.css";
 import { Geist, Geist_Mono } from "next/font/google";
-import Navbar from "@/components/Navbar/Navbar";
 import { Footer } from "@/components/Footer/Footer";
 import { TanstackProvider } from "@/providers/tansteck-provider";
 import CatalogModal from "@/components/CatalogModal/CatalogModal";
-
+import { Suspense } from "react";
+import type { LoadingSpinner } from "@/components/LoadingSpinner";
+import Loading from "./loading";
+import Navbar from "@/components/Navbar/Navbar";
+import RegisterModal from "@/components/Modals/RegisterModal";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -34,9 +37,12 @@ export default function RootLayout({
       >
         <TanstackProvider>
           <Navbar />
-          <main className="flex-1 py-20">{children}</main>
+          <main className="flex-1 py-20 flex items-center justify-center">
+            <Suspense fallback={<Loading />}>{children}</Suspense>
+          </main>
           <Footer />
-          <CatalogModal/>
+          <CatalogModal />
+          <RegisterModal/>
         </TanstackProvider>
       </body>
     </html>

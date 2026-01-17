@@ -11,11 +11,13 @@ import { getCategories } from "@/server/categories";
 import { Search, ShoppingCart, User, LogIn } from "lucide-react";
 import { Navigation, Autoplay } from "swiper/modules";
 import { useCatalogStore } from "@/store/catalogStore";
+import useRegisterModal from "@/hooks/useRegisterModal";
 
 const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 const { openCatalog } = useCatalogStore();
+ const registerModal = useRegisterModal();
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Search query:", searchQuery);
@@ -80,12 +82,12 @@ const { openCatalog } = useCatalogStore();
             >
               <User size={20} />
             </Link>
-            <Link
-              href="/login"
+            <button
+              onClick={registerModal.onOpen}
               className="p-2 text-gray-600 hover:text-red-600"
             >
               <LogIn size={20} />
-            </Link>
+            </button>
           </div>
         </div>
 
@@ -137,12 +139,12 @@ const { openCatalog } = useCatalogStore();
               >
                 Профиль
               </Link>
-              <Link
+              <link
                 href="/login"
                 className="block p-2 text-gray-600 hover:text-red-600"
               >
                 Вход
-              </Link>
+              </link>
             </div>
           )}
         </div>

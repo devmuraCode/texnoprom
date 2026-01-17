@@ -55,12 +55,9 @@ export default async function ProductDetail({
           {product.title}
         </h1>
 
-        {/* === Главный flex-контейнер: галерея + карточка === */}
         <div className="flex justify-between flex-col lg:flex-row gap-6 lg:gap-8 mb-10">
-          {/* === Галерея (левая часть) === */}
           <div className="w-full">
             <div className="grid grid-cols-1 gap-4">
-              {/* Главное фото */}
               <div className="relative w-full h-64 sm:h-80 lg:h-96 bg-white rounded-lg shadow-sm overflow-hidden">
                 <Image
                   src={product.mainimg}
@@ -72,7 +69,7 @@ export default async function ProductDetail({
                 />
               </div>
 
-              {/* Миниатюры */}
+           
               {photos.length > 0 && (
                 <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
                   {photos.map((photo) => (
@@ -94,7 +91,6 @@ export default async function ProductDetail({
             </div>
           </div>
 
-          {/* === Карточка с рассрочкой (правая часть) === */}
           <div className="w-full">
             <ProductCardClient
               id={product.id}
@@ -112,7 +108,6 @@ export default async function ProductDetail({
           </div>
         </div>
 
-        {/* === Характеристики === */}
         <div className="bg-white p-6 rounded-lg shadow-md mb-8">
           <h2 className="text-2xl font-semibold text-gray-800 mb-6 border-b border-gray-200 pb-2">
             Характеристики
@@ -129,7 +124,6 @@ export default async function ProductDetail({
           </ul>
         </div>
 
-        {/* === Описание === */}
         {product.description && (
           <div className="bg-white p-6 rounded-lg shadow-md mb-8">
             <h2 className="text-2xl font-semibold text-gray-800 mb-4">

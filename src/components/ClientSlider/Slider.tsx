@@ -22,13 +22,10 @@ interface ClientSliderProps {
   slidesPerView: number;
 }
 
-const Slider: React.FC<ClientSliderProps> = ({
-  items,
-  slidesPerView,
-}) => {
+const Slider: React.FC<ClientSliderProps> = ({ items, slidesPerView }) => {
   return (
     <Swiper
-      modules={[ Autoplay]}
+      modules={[Autoplay, Navigation]}
       spaceBetween={20}
       slidesPerView={slidesPerView}
       className="w-full max-w-7xl m-0"
@@ -40,16 +37,13 @@ const Slider: React.FC<ClientSliderProps> = ({
     >
       {items.map((item) => (
         <SwiperSlide key={item.id} className="flex justify-center items-center">
-          <Link
-            href={item.link}
-            className="text-gray-600 hover:text-red-600 text-sm font-medium py-2 transition-colors duration-200"
-          >
+          <Link href={item.link} className="block">
             <Image
               src={item.img}
               alt={item.title}
-              width={100}
-              height={100}
-              className="w-12 h-12"
+              width={60}
+              height={60}
+              className="w-12 h-12 object-contain"
             />
           </Link>
         </SwiperSlide>
