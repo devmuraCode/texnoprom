@@ -42,7 +42,7 @@ export default function RootLayout({
           </main>
           <Footer />
           <CatalogModal />
-          <RegisterModal/>
+          <RegisterModal />
         </TanstackProvider>
       </body>
     </html>

@@ -37,7 +37,7 @@ export const Brands = async () => {
           title: brand.title,
           slug: brand.slug,
           img: brand.logo,
-          link: `/brand/${brand.slug}`,
+          link: `catalog/brand/${brand.slug}`,
         }))}
         slidesPerView={6}
       />

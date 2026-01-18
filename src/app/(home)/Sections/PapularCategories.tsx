@@ -42,7 +42,7 @@ export const PapularCategories = async () => {
           title: cat.title,
           slug: cat.slug,
           img: cat.img,
-          link: `/category/${cat.slug}`,
+          link: `catalog/category/${cat.slug}`,
         }))}
         slidesPerView={6}
       />

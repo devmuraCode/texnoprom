@@ -1,12 +1,5 @@
 import { httpClient } from "@/httpClient/httpClient";
-
-export type ApiListResponse<T> = {
-  length: number;
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: T[];
-};
+import type { ApiListResponse } from "@/shared/types/api";
 
 export type Product = {
   id: string;
@@ -21,27 +14,23 @@ export type Product = {
   updated_at?: string;
 };
 
-export async function getProductsByBrandSlug(
-  brandSlug: string
-): Promise<ApiListResponse<Product>> {
-  const res = await fetch(`${httpClient}/products/brands/${brandSlug}/`, {
-    cache: "no-store",
-  });
-
-  if (!res.ok) throw new Error("Ошибка загрузки товаров по бренду");
-  return res.json();
+export async function getProductsByBrandSlug(brandSlug: string) {
+  const { data } = await httpClient.get<ApiListResponse<Product>>(
+    `/products/brands/${encodeURIComponent(brandSlug)}/`
+  );
+  return data;
 }
 
-export async function getProductsByBrandCategorySlug(
-  brandSlug: string
-): Promise<ApiListResponse<Product>> {
-  const res = await fetch(
-    `${httpClient}/products/brand-category/${brandSlug}/`,
-    {
-      cache: "no-store",
-    }
+export async function getProductsByBrandCategorySlug(brandSlug: string) {
+  const { data } = await httpClient.get<ApiListResponse<Product>>(
+    `/products/brand-category/${encodeURIComponent(brandSlug)}/`
   );
+  return data;
+}
 
-  if (!res.ok) throw new Error("Ошибка загрузки товаров по brand-category");
-  return res.json();
+export async function getProductsByCategorySlug(categorySlug: string) {
+  const { data } = await httpClient.get<ApiListResponse<Product>>(
+    `/products/categories/${encodeURIComponent(categorySlug)}/`
+  );
+  return data;
 }

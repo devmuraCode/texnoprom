@@ -35,7 +35,8 @@ export default function CatalogModal() {
   const [collections, setCollections] = useState<Collection[]>([]);
   const [loadingCollections, setLoadingCollections] = useState(false);
   const [collectionsError, setCollectionsError] = useState<string | null>(null);
-const [activeMobileSlug, setActiveMobileSlug] = useState<string>("");
+
+  const [activeMobileSlug, setActiveMobileSlug] = useState<string>("");
 
   const [loadingCategoriesSlug, setLoadingCategoriesSlug] = useState<
     string | null
@@ -72,9 +73,7 @@ const [activeMobileSlug, setActiveMobileSlug] = useState<string>("");
         setCollectionsError(null);
 
         const data = await getCollections();
-        const sorted = [...data].sort(
-          (a: Collection, b: Collection) => a.priority - b.priority
-        );
+        const sorted = [...data].sort((a, b) => a.priority - b.priority);
 
         if (!cancelled) setCollections(sorted);
       } catch (e) {
@@ -89,21 +88,38 @@ const [activeMobileSlug, setActiveMobileSlug] = useState<string>("");
     };
   }, [isOpen, collections.length]);
 
-
+  // ✅ Автовыбор первого пункта:
   useEffect(() => {
     if (!isOpen) return;
-    if (isMobile) return;
-    if (!selectedSlug && collections.length > 0) {
-      setSelectedSlug(collections[0].slug);
+    if (collections.length === 0) return;
+
+    if (isMobile) {
+      // mobile: открываем первый accordion
+      if (!activeMobileSlug) {
+        setActiveMobileSlug(collections[0].slug);
+      }
+      if (!selectedSlug) {
+        setSelectedSlug(collections[0].slug);
+      }
+    } else {
+      // desktop: выбираем первый слева
+      if (!selectedSlug) {
+        setSelectedSlug(collections[0].slug);
+      }
     }
-  }, [isOpen, isMobile, selectedSlug, collections, setSelectedSlug]);
+  }, [
+    isOpen,
+    isMobile,
+    collections,
+    activeMobileSlug,
+    selectedSlug,
+    setSelectedSlug,
+  ]);
 
   // load categories for selectedSlug (cached)
   useEffect(() => {
     if (!isOpen) return;
     if (!selectedSlug) return;
-
-    // если уже есть — не грузим
     if (categoriesBySlug[selectedSlug]) return;
 
     let cancelled = false;
@@ -114,7 +130,6 @@ const [activeMobileSlug, setActiveMobileSlug] = useState<string>("");
         setCategoriesErrorSlug(null);
 
         const cats = await getCategoriesByCollection(selectedSlug);
-        console.log("categories sample:", cats);
         if (!cancelled) setCategoriesForSlug(selectedSlug, cats);
       } catch (e) {
         if (!cancelled) setCategoriesErrorSlug(selectedSlug);
@@ -122,6 +137,7 @@ const [activeMobileSlug, setActiveMobileSlug] = useState<string>("");
         if (!cancelled) setLoadingCategoriesSlug(null);
       }
     })();
+
     return () => {
       cancelled = true;
     };
@@ -131,6 +147,7 @@ const [activeMobileSlug, setActiveMobileSlug] = useState<string>("");
     if (!selectedSlug) return undefined;
     return categoriesBySlug[selectedSlug];
   }, [selectedSlug, categoriesBySlug]);
+
   useEffect(() => {
     if (!categories) return;
     const initial: Record<string, number> = {};
@@ -152,79 +169,104 @@ const [activeMobileSlug, setActiveMobileSlug] = useState<string>("");
     }));
   };
 
-const renderBrandsList = (category: any) => {
-  const list = Array.isArray(category?.children) ? category.children : []; // защита
+  const renderBrandsList = (category: any) => {
+    const list = Array.isArray(category?.children) ? category.children : [];
+    const limit = visibleItems[category.category_id] ?? ITEMS_PER_LOAD;
+    const visibleBrands = list.slice(0, limit);
 
-  const limit = visibleItems[category.category_id] ?? ITEMS_PER_LOAD;
-  const visibleBrands = list.slice(0, limit);
+    const hasMore = list.length > limit;
+    const isExpanded = limit > ITEMS_PER_LOAD;
 
-  const hasMore = list.length > limit;
-  const isExpanded = limit > ITEMS_PER_LOAD;
+    if (list.length === 0) return null;
 
-  if (list.length === 0) return null;
+    return (
+      <>
+        <ul className="space-y-1">
+          {visibleBrands.map((brand: any) => (
+            <li key={brand.brand_id}>
+              <Link
+                href={`/catalog/${brand.brand_slug}`}
+                onClick={closeCatalog}
+                className="block py-1 text-gray-700 hover:text-black"
+              >
+                {brand.brand_title}
+              </Link>
+            </li>
+          ))}
+        </ul>
 
-  return (
-    <>
-      <ul className="space-y-1">
-        {visibleBrands.map((brand: any) => (
-          <li key={brand.brand_id}>
-            <Link
-              href={`/catalog/${brand.brand_slug}`}
-              onClick={closeCatalog}
-              className="block py-1 text-gray-700 hover:text-black"
-            >
-              {brand.brand_title}
-            </Link>
-          </li>
-        ))}
-      </ul>
+        {hasMore && (
+          <button
+            type="button"
+            onClick={() => handleShowMore(category.category_id)}
+            className="mt-2 inline-flex items-center gap-2 text-sm text-gray-600 hover:text-black"
+          >
+            Еще <FaAngleDown />
+          </button>
+        )}
 
-      {hasMore && (
-        <button
-          onClick={() => handleShowMore(category.category_id)}
-          className="mt-2 inline-flex items-center gap-2 text-sm text-gray-600 hover:text-black"
-        >
-          Еще <FaAngleDown />
-        </button>
-      )}
+        {isExpanded && (
+          <button
+            type="button"
+            onClick={() => handleShowLess(category.category_id)}
+            className="mt-2 block text-sm text-gray-600 hover:text-black"
+          >
+            Свернуть
+          </button>
+        )}
+      </>
+    );
+  };
 
-      {isExpanded && (
-        <button
-          onClick={() => handleShowLess(category.category_id)}
-          className="mt-2 block text-sm text-gray-600 hover:text-black"
-        >
-          Свернуть
-        </button>
-      )}
-    </>
-  );
-};
+  const handleMobilePanelChange = (slug: string) => {
+    setActiveMobileSlug(slug);
+    if (slug) setSelectedSlug(slug);
+  };
 
-const handleMobilePanelChange = (slug: string) => {
-  setActiveMobileSlug(slug);
-  if (slug) setSelectedSlug(slug); // чтобы загрузить категории/бренды
-};
   if (!isOpen) return null;
 
   return (
     <>
-      <div onClick={closeCatalog} className="fixed inset-0 z-40 bg-black/40" />
+      {/* overlay */}
+      <button
+        type="button"
+        aria-label="Закрыть каталог"
+        onClick={closeCatalog}
+        className="fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px]"
+      />
 
-      <div className="fixed left-0 top-0 z-50 h-full w-full max-w-[980px] bg-white shadow-2xl">
-        <div className="flex items-center justify-between border-b px-6 py-5">
-          <h2 className="text-2xl font-bold">Каталог</h2>
+      {/* panel */}
+      <section
+        className="
+          fixed inset-0 z-50 bg-white shadow-2xl
+          md:left-0 md:top-0 md:h-full md:w-full md:max-w-[980px]
+        "
+        role="dialog"
+        aria-modal="true"
+      >
+        {/* header */}
+        <div className="flex items-center justify-between border-b px-4 md:px-6 py-4 md:py-5">
+          <h2 className="text-xl md:text-2xl font-bold">Каталог</h2>
           <button
+            type="button"
             onClick={closeCatalog}
-            className="rounded-full p-2 hover:bg-gray-100"
+            className="rounded-md p-2 hover:bg-gray-100"
+            aria-label="Закрыть"
           >
-            <X className="h-7 w-7" />
+            <X className="h-6 w-6 md:h-7 md:w-7" />
           </button>
         </div>
 
-        <div className="h-[calc(100%-76px)]">
+        {/* body */}
+        <div className="h-[calc(100%-64px)] md:h-[calc(100%-76px)]">
           <div className="flex h-full">
-            {/* sidebar */}
-            <aside className="w-[320px] border-r p-4">
+            {/* sidebar / mobile content */}
+            <aside
+              className="
+                w-full md:w-[320px] border-r md:border-r
+                p-4 overflow-y-auto
+              "
+            >
               {loadingCollections && (
                 <div className="text-gray-500">Загрузка...</div>
               )}
@@ -243,8 +285,8 @@ const handleMobilePanelChange = (slug: string) => {
                         label: c.title,
                         children: (
                           <MobileCategories
+                            activeKey={activeMobileSlug} // ✅ ВАЖНО
                             slug={c.slug}
-                            selectedSlug={selectedSlug}
                             categoriesBySlug={categoriesBySlug}
                             loadingSlug={loadingCategoriesSlug}
                             errorSlug={categoriesErrorSlug}
@@ -259,6 +301,7 @@ const handleMobilePanelChange = (slug: string) => {
                       {collections.map((c) => (
                         <li key={c.id}>
                           <button
+                            type="button"
                             onClick={() => setSelectedSlug(c.slug)}
                             className={[
                               "w-full rounded-lg px-3 py-2 text-left",
@@ -277,6 +320,7 @@ const handleMobilePanelChange = (slug: string) => {
               )}
             </aside>
 
+            {/* desktop main */}
             {!isMobile && (
               <main className="flex-1 overflow-y-auto p-6">
                 {!selectedSlug && (
@@ -313,13 +357,13 @@ const handleMobilePanelChange = (slug: string) => {
             )}
           </div>
         </div>
-      </div>
+      </section>
     </>
   );
 }
 
 function MobileCategories({
-  isActive,
+  activeKey,
   slug,
   categoriesBySlug,
   loadingSlug,
@@ -327,7 +371,8 @@ function MobileCategories({
   closeCatalog,
   renderBrandsList,
 }: any) {
-  if (!isActive) return null;
+  // ✅ фикс: теперь реально понимаем, активна панель или нет
+  if (activeKey !== slug) return null;
 
   const categories = categoriesBySlug[slug];
 
@@ -338,7 +383,7 @@ function MobileCategories({
   if (!categories) return null;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pt-3">
       {categories.map((category: any) => (
         <div key={category.category_id}>
           <Link

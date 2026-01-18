@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useCartStore } from "@/store/cartStore";
@@ -40,12 +40,16 @@ const ProductCard: React.FC<ProductCardProps> = ({
       })
     : null;
 
+  const basePrice = useMemo(() => Number(price) || 0, [price]);
+  const hasDiscount =
+    typeof discounted_price === "number" &&
+    discounted_price > 0 &&
+    discounted_price < basePrice;
 
+  const finalPrice = hasDiscount ? discounted_price! : basePrice;
 
-  const numericPrice =
-    discounted_price && discounted_price < Number(price)
-      ? discounted_price
-      : Number(price);
+  // если хочешь включить — разкомментируй
+  // const isOutOfStock = typeof stock_quantity === "number" && stock_quantity <= 0;
 
   const handleAddToCart = () => {
     // if (isOutOfStock) return;
@@ -54,7 +58,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
       {
         id,
         title,
-        price: numericPrice,
+        price: finalPrice,
         image: mainimg,
       },
       1
@@ -62,78 +66,120 @@ const ProductCard: React.FC<ProductCardProps> = ({
   };
 
   return (
-    <div className="border border-gray-200 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 bg-white relative">
+    <article
+      className="
+        group relative overflow-hidden rounded-xl border border-gray-200 bg-white
+        shadow-sm transition-all duration-200 hover:shadow-lg
+      "
+    >
+      {/* badge */}
       {discount_percent && parseFloat(discount_percent) > 0 && (
-        <div className="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded">
+        <div
+          className="
+            absolute left-2 top-2 z-10 rounded-md bg-red-600 px-2 py-1
+            text-[11px] font-bold text-white sm:left-3 sm:top-3 sm:text-xs
+          "
+        >
           -{discount_percent}%
         </div>
       )}
 
-      <div className="relative w-full h-72">
-        <Image
-          src={mainimg}
-          alt={title}
-          fill
-          className="object-contain"
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-        />
-      </div>
+      {/* image */}
+      <Link href={`/product/${slug}`} className="block">
+        <div
+          className="
+            relative w-full bg-gray-50
+            h-44 sm:h-52 md:h-60 lg:h-72
+          "
+        >
+          <Image
+            src={mainimg}
+            alt={title}
+            fill
+            className="object-contain p-3 transition-transform duration-200 group-hover:scale-[1.02]"
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+          />
+        </div>
+      </Link>
 
-      <div className="p-4">
-        <h3 className="text-lg font-semibold text-gray-800 line-clamp-2">
-          {title}
-        </h3>
+      {/* content */}
+      <div className="p-3 sm:p-4">
+        <Link href={`/product/${slug}`} className="block">
+          <h3
+            className="
+              text-sm sm:text-base font-semibold text-gray-800
+              line-clamp-2 leading-snug
+              group-hover:text-red-600 transition-colors
+            "
+            title={title}
+          >
+            {title}
+          </h3>
+        </Link>
 
+        {/* price */}
         <div className="mt-2">
-          {discounted_price && discounted_price < parseFloat(price) ? (
-            <div className="flex items-center gap-2">
-              <span className="text-red-600 text-xl font-bold">
-                {discounted_price.toLocaleString()} сум
+          {hasDiscount ? (
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+              <span className="text-lg sm:text-xl font-bold text-red-600">
+                {finalPrice.toLocaleString()} сум
               </span>
-              <span className="text-gray-500 line-through">
-                {parseFloat(price).toLocaleString()} сум
+              <span className="text-xs sm:text-sm text-gray-500 line-through">
+                {basePrice.toLocaleString()} сум
               </span>
             </div>
           ) : (
-            <span className="text-gray-800 text-xl font-bold">
-              {parseFloat(price).toLocaleString()} сум
+            <span className="text-lg sm:text-xl font-bold text-gray-800">
+              {basePrice.toLocaleString()} сум
             </span>
           )}
         </div>
 
-        {installment && (
-          <p className="text-sm text-gray-600 mt-1">
+        {/* installment */}
+        {installment ? (
+          <p className="mt-1 text-xs sm:text-sm text-gray-600">
             Рассрочка: {installment.toLocaleString()} сум/мес
           </p>
+        ) : (
+          <div className="h-4 sm:h-5" />
         )}
 
-        {/* {isOutOfStock && (
-          <p className="text-sm text-red-600 mt-1">Нет в наличии</p>
-        )} */}
-
+        {/* updated */}
         {lastUpdated && (
-          <p className="text-xs text-gray-500 mt-1">Обновлено: {lastUpdated}</p>
+          <p className="mt-1 text-[11px] sm:text-xs text-gray-500">
+            Обновлено: {lastUpdated}
+          </p>
         )}
       </div>
 
-      <div className="p-4 pt-0 flex gap-2 items-center">
-        <Link
-          href={`/product/${slug}`}
-          className="w-full inline-block bg-red-600 text-white text-center py-2 rounded hover:bg-red-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
-          // aria-disabled={isOutOfStock}
-        >
-          Купить
-        </Link>
+      {/* actions */}
+      <div className="px-3 pb-3 sm:px-4 sm:pb-4">
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Link
+            href={`/product/${slug}`}
+            className="
+              inline-flex w-full items-center justify-center rounded-md
+              bg-red-600 px-3 py-2 text-sm font-semibold text-white
+              hover:bg-red-700 active:bg-red-800 transition-colors
+            "
+          >
+            Купить
+          </Link>
 
-        <button
-          onClick={handleAddToCart}
-          // disabled={isOutOfStock}
-          className="w-full inline-block bg-gray-200 text-gray-600 text-center py-2 rounded hover:bg-gray-300 transition-colors disabled:bg-gray-300 disabled:text-gray-400 disabled:cursor-not-allowed"
-        >
-          Добавить в корзину
-        </button>
+          <button
+            type="button"
+            onClick={handleAddToCart}
+            className="
+              inline-flex w-full items-center justify-center rounded-md
+              bg-gray-100 px-3 py-2 text-sm font-semibold text-gray-700
+              hover:bg-gray-200 active:bg-gray-300 transition-colors
+            "
+          >
+            В корзину
+          </button>
+        </div>
       </div>
-    </div>
+    </article>
   );
 };
 
