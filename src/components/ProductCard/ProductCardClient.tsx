@@ -1,10 +1,11 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useInstallment } from "@/server/useInstallment";
+import toast from "react-hot-toast";
 
 import { useCartStore } from "@/store/cartStore";
+import { useInstallment } from "@/hooks/useInstalment";
 
 interface ProductCardClientProps {
   id: string;
@@ -19,6 +20,17 @@ interface ProductCardClientProps {
   updated_at?: string;
   currentDateTime: string;
 }
+
+const monthsOptions = [3, 6, 9, 12, 15, 18, 24];
+
+const toNumberPrice = (p: string) => {
+  const cleaned = p.replace(/\s/g, "").replace(/,/g, ".");
+  const n = Number(cleaned);
+  return Number.isFinite(n) ? n : 0;
+};
+
+const formatPrice = (value: number) =>
+  Math.round(value).toLocaleString("ru-RU") + " сум";
 
 const ProductCardClient: React.FC<ProductCardClientProps> = ({
   id,
@@ -44,67 +56,77 @@ const ProductCardClient: React.FC<ProductCardClientProps> = ({
   const items = useCartStore((s) => s.items);
   const addToCartStore = useCartStore((s) => s.addToCart);
 
-  // ✅ как в первом
   const [isAddedToCart, setIsAddedToCart] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
-  // Состояние выбора срока
-  const [selectedMonths, setSelectedMonths] = useState(12);
+  const [selectedMonths, setSelectedMonths] = useState<number>(12);
 
-  const { data: installments = [], isLoading } = useInstallment({
+  // const {
+  //   data: installments = [],
+  //   isLoading,
+  //   isError,
+  //   error,
+  // } = useInstallment(id, selectedMonths);
+
+  const { data: installments = [], isLoading, isError, error } = useInstallment({
     productId: id,
     months: selectedMonths,
   });
 
-  const [selectedService, setSelectedService] = useState<{
-    title: string;
-    monthly_payment: number;
-  } | null>(null);
-
+  const [selectedServiceId, setSelectedServiceId] = useState<string | null>(
+    null
+  );
   useEffect(() => {
-    if (installments.length > 0) {
-      setSelectedService({
-        title: installments[0].title,
-        monthly_payment: installments[0].monthly_payment,
-      });
-    } else {
-      setSelectedService(null);
-    }
+    if (installments.length > 0) setSelectedServiceId(installments[0].id);
+    else setSelectedServiceId(null);
   }, [installments]);
 
+  const selectedService = useMemo(() => {
+    return (
+      installments.find(
+        (x: { id: string | null }) => x.id === selectedServiceId
+      ) ?? null
+    );
+  }, [installments, selectedServiceId]);
+
   useEffect(() => {
-    const exists = items.some((item) => item.id === id);
-    setIsAddedToCart(exists);
+    setIsAddedToCart(items.some((item) => item.id === id));
   }, [items, id]);
 
-  const monthsOptions = [3, 6, 9, 12, 15, 18, 24];
+  const handleAddToCart = () => {
+    if (!selectedService) {
+      toast.error("Выберите тариф рассрочки");
+      return;
+    }
 
-  const formatPrice = (value: number) => value.toLocaleString("ru-RU") + " сум";
+    const basePrice = toNumberPrice(price);
+    const finalPrice =
+      typeof discounted_price === "number" &&
+      discounted_price > 0 &&
+      discounted_price < basePrice
+        ? discounted_price
+        : basePrice;
 
- const handleAddToCart = () => {
-   if (!selectedService) return;
+    addToCartStore(
+      {
+        id,
+        title,
+        price: finalPrice,
+        image: mainimg,
+        installment: selectedMonths,
+        installmentService: {
+          title: selectedService.title,
+          monthly_payment: selectedService.monthly_payment,
+        },
+      },
+      1
+    );
 
-   const finalPrice =
-     typeof discounted_price === "number" &&
-     discounted_price < parseFloat(price)
-       ? discounted_price
-       : parseFloat(price);
-
-   addToCartStore(
-     {
-       id,
-       title,
-       price: finalPrice,
-       image: mainimg,
-     },
-     1
-   );
-
-   setIsAddedToCart(true);
-   setIsAnimating(true);
-   setTimeout(() => setIsAnimating(false), 500);
- };
-
+    setIsAddedToCart(true);
+    setIsAnimating(true);
+    setTimeout(() => setIsAnimating(false), 500);
+    toast.success("Добавлено в корзину ✅");
+  };
 
   const isOutOfStock = stock_quantity !== undefined && stock_quantity <= 0;
 
@@ -117,15 +139,17 @@ const ProductCardClient: React.FC<ProductCardClientProps> = ({
           </h3>
 
           <div className="mb-4">
-            {discounted_price && discounted_price < parseFloat(price) ? (
+            {typeof discounted_price === "number" &&
+            discounted_price > 0 &&
+            discounted_price < toNumberPrice(price) ? (
               <div className="flex items-center gap-2">
                 <span className="text-red-600 text-xl sm:text-2xl font-bold">
-                  {discounted_price.toLocaleString()} сум
+                  {discounted_price.toLocaleString("ru-RU")} сум
                 </span>
                 <span className="text-gray-500 line-through text-sm">
-                  {parseFloat(price).toLocaleString()} сум
+                  {toNumberPrice(price).toLocaleString("ru-RU")} сум
                 </span>
-                {discount_percent && parseFloat(discount_percent) > 0 && (
+                {discount_percent && Number(discount_percent) > 0 && (
                   <span className="bg-red-600 text-white text-xs font-bold px-2 py-1 rounded">
                     -{discount_percent}%
                   </span>
@@ -133,7 +157,7 @@ const ProductCardClient: React.FC<ProductCardClientProps> = ({
               </div>
             ) : (
               <span className="text-gray-800 text-xl sm:text-2xl font-bold">
-                {parseFloat(price).toLocaleString()} сум
+                {toNumberPrice(price).toLocaleString("ru-RU")} сум
               </span>
             )}
           </div>
@@ -152,7 +176,7 @@ const ProductCardClient: React.FC<ProductCardClientProps> = ({
                   <span className="text-xs text-gray-600 mb-1">{month}</span>
                   <input
                     type="radio"
-                    name={`installment-months-${id}`} // ✅ чтобы не конфликтовало между карточками
+                    name={`installment-months-${id}`}
                     value={month}
                     checked={selectedMonths === month}
                     onChange={() => setSelectedMonths(month)}
@@ -164,19 +188,20 @@ const ProductCardClient: React.FC<ProductCardClientProps> = ({
 
             {isLoading ? (
               <p className="text-sm text-gray-500">Загрузка...</p>
+            ) : isError ? (
+              <p className="text-sm text-red-600">
+                {(error as any)?.message || "Ошибка рассрочки"}
+              </p>
             ) : installments.length > 0 ? (
               <div className="space-y-2">
+                {/* @ts-ignore */}
                 {installments.map((inst) => (
-                  <div
+                  <button
+                    type="button"
                     key={inst.id}
-                    onClick={() =>
-                      setSelectedService({
-                        title: inst.title,
-                        monthly_payment: inst.monthly_payment,
-                      })
-                    }
-                    className={`flex items-center justify-between p-2 border rounded cursor-pointer transition-colors ${
-                      selectedService?.title === inst.title
+                    onClick={() => setSelectedServiceId(inst.id)}
+                    className={`w-full flex items-center justify-between p-2 border rounded transition-colors ${
+                      selectedServiceId === inst.id
                         ? "border-red-600 bg-red-50"
                         : "border-gray-300 hover:border-red-400"
                     }`}
@@ -194,7 +219,7 @@ const ProductCardClient: React.FC<ProductCardClientProps> = ({
                     <span className="text-sm font-bold text-green-600">
                       {formatPrice(inst.monthly_payment)}/мес
                     </span>
-                  </div>
+                  </button>
                 ))}
               </div>
             ) : (
@@ -215,14 +240,16 @@ const ProductCardClient: React.FC<ProductCardClientProps> = ({
         <div className="flex gap-2 mt-4">
           <Link
             href={`/product/${slug}`}
-            className="flex-1 bg-red-600 text-white text-center py-2 px-4 rounded hover:bg-red-700 transition-colors disabled:bg-gray-400"
+            className="flex-1 bg-red-600 text-white text-center py-2 px-4 rounded hover:bg-red-700 transition-colors"
             aria-disabled={isOutOfStock}
           >
             Купить
           </Link>
 
           <button
+            type="button"
             onClick={handleAddToCart}
+            // disabled={isOutOfStock}
             className={`flex-1 text-white py-2 px-4 rounded transition-colors disabled:bg-gray-400 ${
               isAddedToCart ? "bg-gray-600" : "bg-green-600 hover:bg-green-700"
             } ${isAnimating ? "scale-105" : "scale-100"} transition-transform`}

@@ -6,11 +6,11 @@ import { Footer } from "@/components/Footer/Footer";
 import { TanstackProvider } from "@/providers/tansteck-provider";
 import CatalogModal from "@/components/CatalogModal/CatalogModal";
 import { Suspense } from "react";
-import type { LoadingSpinner } from "@/components/LoadingSpinner";
 import Loading from "./loading";
 import Navbar from "@/components/Navbar/Navbar";
 import RegisterModal from "@/components/Modals/RegisterModal";
 import LoginModal from "@/components/Modals/LoginModal";
+import Verify_phoneModal from "@/components/Modals/Verify_phoneModal";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -42,6 +42,7 @@ export default function RootLayout({
             <Suspense fallback={<Loading />}>{children}</Suspense>
           </main>
           <Footer />
+          <Verify_phoneModal />
           <CatalogModal />
           <RegisterModal />
           <LoginModal />

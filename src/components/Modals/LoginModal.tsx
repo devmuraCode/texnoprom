@@ -13,6 +13,11 @@ import Heading from "../Heading/Heading";
 import { httpClient } from "@/httpClient/httpClient";
 import useLoginModal from "@/hooks/useLoginModal";
 
+type LoginInputs = {
+  phone_number: string;
+  password: string;
+};
+
 const LoginModal = () => {
   const loginModal = useLoginModal();
   const registerModal = useRegisterModal();
@@ -28,20 +33,24 @@ const LoginModal = () => {
 
   const onSubmit: SubmitHandler<FieldValues> = async (data) => {
     setIsLoading(true);
-
     try {
-      const res = await httpClient.post("/users/login/", data);
+      const res = await httpClient.post("/users/login/", {
+        phone_number: data.phone_number,
+        password: data.password,
+      });
+
       localStorage.setItem("token", res.data.access);
       localStorage.setItem("user_id", res.data.user_id);
 
       toast.success("Вы успешно вошли в аккаунт");
-
       loginModal.onClose();
-
       router.refresh();
     } catch (err: any) {
-      toast.error("Неверный логин или пароль");
-      console.error(err);
+      const msg =
+        err?.response?.data?.detail ||
+        err?.response?.data?.message ||
+        "Неверный номер или пароль";
+      toast.error(msg);
     } finally {
       setIsLoading(false);
     }

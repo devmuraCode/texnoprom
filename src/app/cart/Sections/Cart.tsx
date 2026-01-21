@@ -3,6 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo } from "react";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 import { useCartStore } from "@/store/cartStore";
 
 function formatUZS(value: number) {
@@ -10,6 +12,8 @@ function formatUZS(value: number) {
 }
 
 export default function Cart() {
+  const router = useRouter();
+
   const items = useCartStore((s) => s.items);
   const addToCart = useCartStore((s) => s.addToCart);
   const decrease = useCartStore((s) => s.decrease);
@@ -22,6 +26,26 @@ export default function Cart() {
     () => items.reduce((acc, i) => acc + (i.quantity ?? 0), 0),
     [items]
   );
+
+  const totalMonthly = useMemo(() => {
+    return items.reduce((sum, i: any) => {
+      const mp = i?.installmentService?.monthly_payment;
+      if (!mp) return sum;
+      return sum + Number(mp) * Number(i.quantity ?? 0);
+    }, 0);
+  }, [items]);
+
+  const onCheckout = () => {
+    const token =
+      typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
+    if (!token) {
+      toast.error("Сначала войдите в аккаунт");
+      return;
+    }
+
+    router.push("/payment");
+  };
 
   if (items.length === 0) {
     return (
@@ -60,7 +84,20 @@ export default function Cart() {
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6">
         <div className="space-y-4">
           {items.map((i: any) => {
-            const lineTotal = (i.price ?? 0) * (i.quantity ?? 0);
+            const qty = Number(i.quantity ?? 0);
+            const price = Number(i.price ?? 0);
+            const lineTotal = price * qty;
+
+            const hasInstallment =
+              !!i?.installment &&
+              !!i?.installmentService?.title &&
+              typeof i?.installmentService?.monthly_payment === "number";
+
+            const monthlyOne = hasInstallment
+              ? Number(i.installmentService.monthly_payment)
+              : 0;
+
+            const monthlyLine = hasInstallment ? monthlyOne * qty : 0;
 
             return (
               <div
@@ -90,9 +127,24 @@ export default function Cart() {
                         <div className="mt-1 text-sm text-gray-600">
                           Цена:{" "}
                           <span className="font-medium text-gray-900">
-                            {formatUZS(i.price)} сум
+                            {formatUZS(price)} сум
                           </span>
                         </div>
+                        {hasInstallment ? (
+                          <div className="mt-1 text-sm text-gray-600">
+                            Рассрочка:{" "}
+                            <span className="font-medium text-gray-900">
+                              {i.installmentService.title} • {i.installment} мес
+                              • {formatUZS(monthlyOne)} сум/мес
+                            </span>
+                            {/* ✅ платеж/мес с учетом количества */}
+                            {qty > 1 ? (
+                              <div className="text-xs text-gray-500 mt-0.5">
+                                За {qty} шт: {formatUZS(monthlyLine)} сум/мес
+                              </div>
+                            ) : null}
+                          </div>
+                        ) : null}
                       </div>
 
                       <button
@@ -114,7 +166,7 @@ export default function Cart() {
                         </button>
 
                         <div className="h-10 min-w-12 px-3 grid place-items-center font-semibold">
-                          {i.quantity}
+                          {qty}
                         </div>
 
                         <button
@@ -140,7 +192,6 @@ export default function Cart() {
           })}
         </div>
 
-        {/* Summary */}
         <aside className="h-fit lg:sticky lg:top-4">
           <div className="rounded-xl border bg-white p-5 shadow-sm">
             <div className="text-lg font-semibold mb-4">Итого</div>
@@ -150,14 +201,28 @@ export default function Cart() {
               <span className="font-medium">{totalCount}</span>
             </div>
 
-            <div className="flex items-center justify-between text-sm mb-4">
+            <div className="flex items-center justify-between text-sm mb-2">
               <span className="text-gray-600">Сумма</span>
               <span className="font-bold text-gray-900">
                 {formatUZS(totalPrice)} сум
               </span>
             </div>
 
-            <button className="w-full rounded-lg bg-red-600 py-3 text-white font-semibold hover:bg-red-700">
+            {totalMonthly > 0 ? (
+              <div className="flex items-center justify-between text-sm mb-4">
+                <span className="text-gray-600">Итого в месяц</span>
+                <span className="font-bold text-gray-900">
+                  {formatUZS(totalMonthly)} сум/мес
+                </span>
+              </div>
+            ) : (
+              <div className="mb-4" />
+            )}
+
+            <button
+              onClick={onCheckout}
+              className="w-full rounded-lg bg-red-600 py-3 text-white font-semibold hover:bg-red-700"
+            >
               Оформить заказ
             </button>
 

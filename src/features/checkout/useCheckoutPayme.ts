@@ -1,13 +1,16 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
-type CheckoutBody = {
+
+type OrderItem = { product_id: string; quantity: number };
+
+export type CheckoutBody = {
   amount: number;
   user: string | null;
   delivery_address: string;
   phone_number: string;
   district: string;
-  products: string[];
+  order_items: OrderItem[];
 };
 
 type OrderResponse = {
@@ -21,7 +24,7 @@ type PayLinkResponse = {
 
 async function postJson<T>(
   url: string,
-  body: any,
+  body: unknown,
   token?: string | null
 ): Promise<T> {
   const res = await fetch(url, {
@@ -51,6 +54,7 @@ export function useCheckoutPayme() {
     mutationFn: async (payload: CheckoutBody) => {
       const token =
         typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
       const order = await postJson<OrderResponse>(
         "/api/checkout/order",
         payload,

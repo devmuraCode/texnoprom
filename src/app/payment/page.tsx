@@ -68,6 +68,10 @@ export default function PaymentPage() {
         phone_number: phone,
         district: selectedDistrict,
         products: productIds,
+        order_items: items.map((i: any) => ({
+          product_id: String(i.id), 
+          quantity: i.quantity ?? 1,
+        })),
       };
 
       const link = await checkout.mutateAsync(payload);
@@ -79,6 +83,32 @@ export default function PaymentPage() {
       toast.error(err?.message || "Ошибка оплаты");
     }
   };
+
+  const onInstallment = async () => {
+    const payload = {
+      phone_number: phone,
+      district: selectedDistrict,
+      delivery_address: deliveryAddress,
+      items: items,
+      totalPrice: total,
+    };
+
+    const res = await fetch("/api/telegram/installment", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      toast.error(data?.message || "Ошибка");
+      return;
+    }
+
+    toast.success("Отправлено в Telegram ✅");
+  };
+
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-10">
@@ -146,12 +176,8 @@ export default function PaymentPage() {
                   : "Оплатить через Payme"}
               </button>
 
-              <button
-                type="button"
-                onClick={() => toast("Uzum/Click можно добавить так же")}
-                className="w-full rounded-lg border py-3 font-semibold hover:bg-gray-50"
-              >
-                Другой способ
+              <button type="button" onClick={onInstallment}>
+                Рассрочка
               </button>
             </div>
 

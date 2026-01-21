@@ -175,8 +175,6 @@ const Navbar = () => {
             aria-label="Закрыть меню"
             onClick={() => setIsMenuOpen(false)}
           />
-
-          {/* drawer */}
           <aside className="absolute left-0 top-0 h-full w-[84%] max-w-sm bg-white shadow-xl">
             <div className="flex items-center justify-between border-b border-gray-100 px-4 py-4">
               <div className="flex items-center gap-2">

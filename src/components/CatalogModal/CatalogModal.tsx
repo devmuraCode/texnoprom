@@ -59,8 +59,6 @@ export default function CatalogModal() {
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [closeCatalog]);
-
-  // load collections on open (once)
   useEffect(() => {
     if (!isOpen) return;
     if (collections.length > 0) return;
@@ -87,14 +85,11 @@ export default function CatalogModal() {
       cancelled = true;
     };
   }, [isOpen, collections.length]);
-
-  // ✅ Автовыбор первого пункта:
   useEffect(() => {
     if (!isOpen) return;
     if (collections.length === 0) return;
 
     if (isMobile) {
-      // mobile: открываем первый accordion
       if (!activeMobileSlug) {
         setActiveMobileSlug(collections[0].slug);
       }
@@ -102,7 +97,6 @@ export default function CatalogModal() {
         setSelectedSlug(collections[0].slug);
       }
     } else {
-      // desktop: выбираем первый слева
       if (!selectedSlug) {
         setSelectedSlug(collections[0].slug);
       }
@@ -115,8 +109,6 @@ export default function CatalogModal() {
     selectedSlug,
     setSelectedSlug,
   ]);
-
-  // load categories for selectedSlug (cached)
   useEffect(() => {
     if (!isOpen) return;
     if (!selectedSlug) return;
@@ -227,15 +219,12 @@ export default function CatalogModal() {
 
   return (
     <>
-      {/* overlay */}
       <button
         type="button"
         aria-label="Закрыть каталог"
         onClick={closeCatalog}
         className="fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px]"
       />
-
-      {/* panel */}
       <section
         className="
           fixed inset-0 z-50 bg-white shadow-2xl
@@ -244,7 +233,6 @@ export default function CatalogModal() {
         role="dialog"
         aria-modal="true"
       >
-        {/* header */}
         <div className="flex items-center justify-between border-b px-4 md:px-6 py-4 md:py-5">
           <h2 className="text-xl md:text-2xl font-bold">Каталог</h2>
           <button
@@ -256,11 +244,8 @@ export default function CatalogModal() {
             <X className="h-6 w-6 md:h-7 md:w-7" />
           </button>
         </div>
-
-        {/* body */}
         <div className="h-[calc(100%-64px)] md:h-[calc(100%-76px)]">
           <div className="flex h-full">
-            {/* sidebar / mobile content */}
             <aside
               className="
                 w-full md:w-[320px] border-r md:border-r
@@ -319,8 +304,6 @@ export default function CatalogModal() {
                 </>
               )}
             </aside>
-
-            {/* desktop main */}
             {!isMobile && (
               <main className="flex-1 overflow-y-auto p-6">
                 {!selectedSlug && (
@@ -371,7 +354,6 @@ function MobileCategories({
   closeCatalog,
   renderBrandsList,
 }: any) {
-  // ✅ фикс: теперь реально понимаем, активна панель или нет
   if (activeKey !== slug) return null;
 
   const categories = categoriesBySlug[slug];

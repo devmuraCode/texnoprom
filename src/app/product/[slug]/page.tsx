@@ -69,7 +69,6 @@ export default async function ProductDetail({
                 />
               </div>
 
-           
               {photos.length > 0 && (
                 <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
                   {photos.map((photo) => (

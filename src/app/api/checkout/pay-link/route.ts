@@ -1,13 +1,13 @@
-import { httpClient } from "@/httpClient/httpClient";
 import { NextResponse } from "next/server";
 
+const API_BASE_URL = "https://back-texnoprom.uz";
 
 export async function POST(req: Request) {
   try {
     const auth = req.headers.get("authorization") || "";
-    const body = await req.json(); 
+    const body = await req.json();
 
-    const res = await fetch(`${httpClient}/pay-link/`, {
+    const res = await fetch(`${API_BASE_URL}/pay-link/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

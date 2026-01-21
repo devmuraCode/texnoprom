@@ -12,7 +12,7 @@ import useLoginModal from "@/hooks/useLoginModal";
 import useForgotPasswordModal from "@/hooks/useForgotPassword";
 import useVerify_phoneModal from "@/hooks/useVerify_phoneModal";
 
-import { useRegister, useLogin } from "@/features/auth/useAuth"; // ✅ твои react-query hooks
+import { useRegister } from "@/features/auth/useAuth";
 
 type Inputs = {
   username: string;
@@ -25,6 +25,7 @@ function pickMsg(err: any) {
     err?.detail ||
     err?.message ||
     err?.data?.detail ||
+    err?.data?.message ||
     "Ошибка. Попробуйте ещё раз"
   );
 }
@@ -38,7 +39,6 @@ const RegisterModal = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const registerMut = useRegister();
-  const loginMut = useLogin();
 
   const {
     register,
@@ -49,29 +49,18 @@ const RegisterModal = () => {
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     setIsLoading(true);
     try {
-      // ✅ 1) register
       await registerMut.mutateAsync({
         username: data.username,
         phone_number: data.phone_number,
         password: data.password,
       });
-
-      // ✅ 2) сохраним телефон (как ты делал)
       localStorage.setItem("phone_number", data.phone_number);
 
-      // ✅ 3) auto login -> получим access/refresh и положим в store (useLogin делает setUserInfo)
-      await loginMut.mutateAsync({
-        phone_number: data.phone_number,
-        password: data.password,
-      });
-
-      toast.success("Регистрация успешна ✅");
+      toast.success("Код отправлен ✅");
       registerModal.onClose();
-
-      // ✅ 4) открыть verify
       verifycationModal.onOpen();
     } catch (error: any) {
-      toast.error(pickMsg(error) || "Аккаунт уже существует");
+      toast.error(pickMsg(error));
     } finally {
       setIsLoading(false);
     }
@@ -89,7 +78,6 @@ const RegisterModal = () => {
         name="username"
         label="Имя пользователя"
         disabled={isLoading}
-        // @ts-ignore
         register={register}
         errors={errors}
         required
@@ -101,7 +89,6 @@ const RegisterModal = () => {
         label="Пароль"
         type="password"
         disabled={isLoading}
-        // @ts-ignore
         register={register}
         errors={errors}
         required
@@ -113,7 +100,6 @@ const RegisterModal = () => {
         label="Номер телефона"
         type="tel"
         disabled={isLoading}
-        // @ts-ignore
         register={register}
         errors={errors}
         required

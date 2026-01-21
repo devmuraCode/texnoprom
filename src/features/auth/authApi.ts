@@ -13,25 +13,11 @@ export type RegisterBody = {
 };
 
 export async function loginApi(body: LoginBody): Promise<IAuthData> {
-  const res = await fetch(`${httpClient}/users/login/`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-
-  const data = await res.json();
-  if (!res.ok) throw data;
-  return data as IAuthData;
+  const { data } = await httpClient.post<IAuthData>("/users/login/", body);
+  return data;
 }
 
 export async function registerApi(body: RegisterBody): Promise<unknown> {
-  const res = await fetch(`${httpClient}/users/register/`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-
-  const data = await res.json();
-  if (!res.ok) throw data;
+  const { data } = await httpClient.post("/users/register/", body);
   return data;
 }

@@ -18,8 +18,6 @@ function formatUZS(n: number) {
 export default function BrandCatalogClient({ slug }: { slug: string }) {
   const { data, isLoading, isError } = useProductsByBrand(slug);
   const products = data?.results ?? [];
-
-  // ✅ найдём min/max цены из списка
   const { minAll, maxAll } = useMemo(() => {
     if (products.length === 0) return { minAll: 0, maxAll: 0 };
     const prices = products
@@ -28,13 +26,9 @@ export default function BrandCatalogClient({ slug }: { slug: string }) {
     if (prices.length === 0) return { minAll: 0, maxAll: 0 };
     return { minAll: Math.min(...prices), maxAll: Math.max(...prices) };
   }, [products]);
-
-  // ✅ состояния фильтра
   const [minPrice, setMinPrice] = useState<number | null>(null);
   const [maxPrice, setMaxPrice] = useState<number | null>(null);
   const [onlyInStock, setOnlyInStock] = useState(false);
-
-  // ✅ применяем фильтр
   const filtered = useMemo(() => {
     const minV = minPrice ?? minAll;
     const maxV = maxPrice ?? maxAll;

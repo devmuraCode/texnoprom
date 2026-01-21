@@ -55,7 +55,6 @@ const ClientSlider: React.FC<ClientSliderProps> = ({
 
   return (
     <div className="flex flex-col lg:flex-row gap-8">
-      {/* Banner Slider */}
       <div className="w-full lg:w-2/3">
         <Swiper
           spaceBetween={30}
@@ -119,8 +118,6 @@ const ClientSlider: React.FC<ClientSliderProps> = ({
           <div className="swiper-button-next-banner !w-10 !h-10 !bg-white/80 !rounded-full !shadow-md !text-red-600 hover:!bg-white after:!text-lg" />
         </Swiper>
       </div>
-
-      {/* Day Slider */}
       <div className="w-full lg:w-1/3">
         <Swiper
           spaceBetween={20}

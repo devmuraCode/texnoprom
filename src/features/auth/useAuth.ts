@@ -9,8 +9,13 @@ import {
 import { useAuthStore } from "@/features/auth/authStore";
 
 function pickErrorMessage(err: any) {
-  // подстрой если у бэка другой формат
-  return err?.detail || err?.message || "Ошибка";
+  return (
+    err?.data?.detail ||
+    err?.data?.message ||
+    err?.detail ||
+    err?.message ||
+    "Ошибка"
+  );
 }
 
 export function useLogin() {

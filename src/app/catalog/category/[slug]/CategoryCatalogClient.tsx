@@ -18,8 +18,6 @@ function formatUZS(n: number) {
 export default function CategoryCatalogClient({ slug }: { slug: string }) {
   const { data, isLoading, isError } = useProductsByCategory(slug);
   const products = data?.results ?? [];
-
-  // ✅ общий min/max
   const { minAll, maxAll } = useMemo(() => {
     if (products.length === 0) return { minAll: 0, maxAll: 0 };
     const prices = products
@@ -29,8 +27,6 @@ export default function CategoryCatalogClient({ slug }: { slug: string }) {
     if (prices.length === 0) return { minAll: 0, maxAll: 0 };
     return { minAll: Math.min(...prices), maxAll: Math.max(...prices) };
   }, [products]);
-
-  // ✅ фильтры
   const [minPrice, setMinPrice] = useState<number | null>(null);
   const [maxPrice, setMaxPrice] = useState<number | null>(null);
   const [onlyInStock, setOnlyInStock] = useState(false);
@@ -64,11 +60,8 @@ export default function CategoryCatalogClient({ slug }: { slug: string }) {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
-      {/* ✅ LEFT FILTER */}
       <aside className="border rounded-xl p-4 h-fit top-4">
         <div className="font-semibold text-lg mb-4">Фильтры</div>
-
-        {/* Price */}
         <div className="mb-4">
           <div className="font-medium mb-2">Цена, сум</div>
 
@@ -92,8 +85,6 @@ export default function CategoryCatalogClient({ slug }: { slug: string }) {
               className="border rounded-md px-3 py-2 w-full"
             />
           </div>
-
-          {/* range */}
           <div className="mt-3">
             <input
               type="range"
@@ -118,8 +109,6 @@ export default function CategoryCatalogClient({ slug }: { slug: string }) {
             </div>
           </div>
         </div>
-
-        {/* In stock */}
         <div className="mb-4 flex items-center justify-between">
           <div className="font-medium">Только в наличии</div>
           <button
@@ -150,8 +139,6 @@ export default function CategoryCatalogClient({ slug }: { slug: string }) {
           Найдено: {filtered.length}
         </div>
       </aside>
-
-      {/* ✅ PRODUCTS */}
       <main>
         {filtered.length === 0 ? (
           <div className="text-gray-500 p-6">По фильтрам ничего не найдено</div>
