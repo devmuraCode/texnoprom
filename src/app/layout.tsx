@@ -10,6 +10,7 @@ import type { LoadingSpinner } from "@/components/LoadingSpinner";
 import Loading from "./loading";
 import Navbar from "@/components/Navbar/Navbar";
 import RegisterModal from "@/components/Modals/RegisterModal";
+import LoginModal from "@/components/Modals/LoginModal";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -43,6 +44,7 @@ export default function RootLayout({
           <Footer />
           <CatalogModal />
           <RegisterModal />
+          <LoginModal />
         </TanstackProvider>
       </body>
     </html>

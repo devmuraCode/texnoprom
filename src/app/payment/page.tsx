@@ -26,7 +26,7 @@ function formatUZS(value: number) {
 
 export default function PaymentPage() {
   const items = useCartStore((s) => s.items);
-  const total = useCartStore((s) => s.totalPrice()); // number
+  const total = useCartStore((s) => s.totalPrice());
   const clear = useCartStore((s) => s.clear);
 
   const productIds = useMemo(
@@ -61,7 +61,6 @@ export default function PaymentPage() {
     }
 
     try {
-      // ⚠️ ты делал amount * 100 — оставим так же
       const payload = {
         amount: Math.round(total * 100),
         user: userId,
@@ -74,9 +73,6 @@ export default function PaymentPage() {
       const link = await checkout.mutateAsync(payload);
 
       toast.success("Перенаправляем на оплату...");
-      // очистку корзины лучше делать после подтверждения оплаты,
-      // но если хочешь как сейчас — можно оставить.
-      // clear();
 
       window.location.href = link.pay_link;
     } catch (err: any) {
@@ -87,7 +83,6 @@ export default function PaymentPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-10">
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6">
-        {/* FORM */}
         <div className="rounded-xl border bg-white p-6 shadow-sm">
           <h1 className="text-2xl font-bold mb-6">Оформить заказ</h1>
 
@@ -167,8 +162,6 @@ export default function PaymentPage() {
             ) : null}
           </form>
         </div>
-
-        {/* SUMMARY */}
         <aside className="h-fit lg:sticky lg:top-4">
           <div className="rounded-xl border bg-white p-6 shadow-sm">
             <div className="text-lg font-semibold mb-4">Ваш заказ</div>

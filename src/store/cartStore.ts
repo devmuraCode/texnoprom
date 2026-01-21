@@ -11,9 +11,7 @@ export type Product = {
   title: string;
   price: number;
   image?: string;
-
-  // ✅ добавили для рассрочки
-  installment?: number; // months
+  installment?: number;
   installmentService?: InstallmentService;
 };
 
@@ -43,8 +41,6 @@ export const useCartStore = create<CartState>()(
           const existing = state.items.find((i) => i.id === product.id);
 
           if (existing) {
-            // ✅ если уже есть, увеличиваем quantity
-            // (а данные рассрочки можно обновить на последние выбранные)
             return {
               items: state.items.map((i) =>
                 i.id === product.id
@@ -59,8 +55,6 @@ export const useCartStore = create<CartState>()(
               ),
             };
           }
-
-          // ✅ если нет — добавляем новый
           return { items: [...state.items, { ...product, quantity: qty }] };
         });
       },

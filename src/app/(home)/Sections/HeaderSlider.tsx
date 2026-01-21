@@ -27,6 +27,7 @@ export const HeaderSlider = async () => {
 
   return (
     <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* @ts-ignore */}
       <ClientSlider banners={banners} dayProductItems={dayProductItems} />
     </div>
   );

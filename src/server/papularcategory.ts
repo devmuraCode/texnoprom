@@ -6,5 +6,6 @@ export const getPapularCategory = async (): Promise<IPapularCategory[]> => {
     "/categories/popular/"
   );
   console.log("getPapularCategory response:", data);
+  // @ts-ignore
   return data[0]?.category || [];
 };

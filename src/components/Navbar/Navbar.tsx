@@ -12,11 +12,6 @@ import { Search, ShoppingCart, User, LogIn, Menu, X } from "lucide-react";
 import { Navigation, Autoplay } from "swiper/modules";
 import { useCatalogStore } from "@/store/catalogStore";
 import useRegisterModal from "@/hooks/useRegisterModal";
-
-// Важно: если Swiper стили не подключены глобально — добавь где-то один раз:
-// import "swiper/css";
-// import "swiper/css/navigation";
-
 const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -48,11 +43,8 @@ const Navbar = () => {
   return (
     <header className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur border-b border-gray-100">
       <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-   
         <div className="flex h-16 items-center justify-between gap-3">
-      
           <div className="flex items-center gap-2">
-         
             <button
               type="button"
               onClick={() => setIsMenuOpen(true)}
@@ -98,7 +90,6 @@ const Navbar = () => {
             </div>
           </form>
 
-         
           <div className="flex items-center gap-1 sm:gap-2">
             <Link
               href="/cart"
@@ -130,7 +121,6 @@ const Navbar = () => {
           </div>
         </div>
 
-    
         <div className="md:hidden pb-3">
           <form onSubmit={handleSearch}>
             <div className="relative">
@@ -148,7 +138,6 @@ const Navbar = () => {
             </div>
           </form>
         </div>
-
 
         <div className="hidden md:block border-t border-gray-100">
           <Swiper
@@ -177,7 +166,6 @@ const Navbar = () => {
         </div>
       </nav>
 
- 
       {isMenuOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
           {/* overlay */}
